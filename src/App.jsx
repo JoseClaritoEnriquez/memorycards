@@ -7,9 +7,6 @@ import './css/App.css'
 function App() {
   const [cards, setCards] = useState([])
   const [loading, setLoading] = useState(true)
-  const [lastClickedLog, setLastClickedLog] = useState('No card clicked yet.')
-
-  // Game state declarations (functionality to be attached later)
   const [cardOrder, setCardOrder] = useState([])
   const [highScore, setHighScore] = useState(0)
   const [gameStatus, setGameStatus] = useState('playing')
@@ -21,7 +18,6 @@ function App() {
     const fetchPokemonCards = async () => {
       setLoading(true)
       try {
-        // Generate 16 unique random Pokémon IDs from Gen 1 (1 to 151)
         const uniqueIds = new Set()
         while (uniqueIds.size < 16) {
           const randomId = Math.floor(Math.random() * 151) + 1
@@ -30,7 +26,7 @@ function App() {
 
         const idArray = Array.from(uniqueIds)
 
-        // Fetch data for all 16 Pokémon concurrently
+
         const pokemonPromises = idArray.map(async (id) => {
           const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
           const data = await response.json()
@@ -66,16 +62,16 @@ function App() {
   }, [])
 
   const handleCardClick = (clickedPokemon) => {
-    // Report card click status
+    setClickedSet((prevSet) => {
+      const nextSet = new Set(prevSet).add(clickedPokemon.id)
+      console.log('clickedSet:', nextSet)
+      return nextSet
+    })
+
     setCards((prevCards) =>
       prevCards.map((card) => {
         if (card.id === clickedPokemon.id) {
           const updatedClickedState = !card.clicked
-          setLastClickedLog(
-            `Card Clicked: ${card.name.toUpperCase()} (ID: ${card.id}) | Previously Clicked: ${
-              card.clicked ? 'YES' : 'NO'
-            }`
-          )
           return { ...card, clicked: updatedClickedState }
         }
         return card
@@ -87,13 +83,12 @@ function App() {
     <div className="app-container">
       <header className="app-header">
         <h1>Pokémon Memory Cards</h1>
-        <p className="status-log">{lastClickedLog}</p>
       </header>
 
       {loading ? (
         <div className="loading-state">
           <div className="spinner"></div>
-          <p>Fetching 16 random Pokémon from PokéAPI...</p>
+          <p>Fetching 12 random Pokémon from PokéAPI...</p>
         </div>
       ) : (
         <main>
