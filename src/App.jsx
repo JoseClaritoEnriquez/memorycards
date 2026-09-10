@@ -62,9 +62,17 @@ function App() {
   }, [])
 
   const handleCardClick = (clickedPokemon) => {
+    if (clickedSet.has(clickedPokemon.id)) {
+      setGameStatus('lost')
+      return
+    }
+
     setClickedSet((prevSet) => {
       const nextSet = new Set(prevSet).add(clickedPokemon.id)
       console.log('clickedSet:', nextSet)
+      if (cards.length > 0 && nextSet.size === cards.length) {
+        setGameStatus('won')
+      }
       return nextSet
     })
 
