@@ -38,7 +38,7 @@ function App() {
         const idArray = Array.from(uniqueIds)
 
         const pokemonPromises = idArray.map(async (id) => {
-          const response = await fetch(`https://pokeapi.co/api/v2/pokemson/${id}`)
+          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
           if (!response.ok) {
             throw new Error(`Failed to fetch Pokémon data (HTTP ${response.status})`)
           }
@@ -152,7 +152,7 @@ function App() {
         </div>
       ) : error ? (
         <main className="error-state">
-          <h2>⚠️ Failed to Load Pokémon</h2>
+          <h2> Failed to Load Pokémon</h2>
           <p>{error}</p>
         </main>
       ) : (
