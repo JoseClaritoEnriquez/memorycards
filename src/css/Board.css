@@ -1,0 +1,23 @@
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 0;
+}
+
+@media (max-width: 900px) {
+  .board {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .board {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}

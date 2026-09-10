@@ -1,121 +1,120 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react'
+import Card from './components/Card'
+import Board from './components/Board'
+import GameModal from './components/GameModal'
+import './css/App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [cards, setCards] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [lastClickedLog, setLastClickedLog] = useState('No card clicked yet.')
+
+  // Game state declarations (functionality to be attached later)
+  const [cardOrder, setCardOrder] = useState([])
+  const [highScore, setHighScore] = useState(0)
+  const [gameStatus, setGameStatus] = useState('playing')
+  const [clickedSet, setClickedSet] = useState(new Set())
+
+  useEffect(() => {
+    let isMounted = true
+
+    const fetchPokemonCards = async () => {
+      setLoading(true)
+      try {
+        // Generate 16 unique random Pokémon IDs from Gen 1 (1 to 151)
+        const uniqueIds = new Set()
+        while (uniqueIds.size < 16) {
+          const randomId = Math.floor(Math.random() * 151) + 1
+          uniqueIds.add(randomId)
+        }
+
+        const idArray = Array.from(uniqueIds)
+
+        // Fetch data for all 16 Pokémon concurrently
+        const pokemonPromises = idArray.map(async (id) => {
+          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+          const data = await response.json()
+          return {
+            id: data.id,
+            name: data.name,
+            image:
+              data.sprites.other['official-artwork'].front_default ||
+              data.sprites.front_default,
+            clicked: false,
+          }
+        })
+
+        const fetchedCards = await Promise.all(pokemonPromises)
+
+        if (isMounted) {
+          setCards(fetchedCards)
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Error fetching Pokémon data:', error)
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchPokemonCards()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const handleCardClick = (clickedPokemon) => {
+    // Report card click status
+    setCards((prevCards) =>
+      prevCards.map((card) => {
+        if (card.id === clickedPokemon.id) {
+          const updatedClickedState = !card.clicked
+          setLastClickedLog(
+            `Card Clicked: ${card.name.toUpperCase()} (ID: ${card.id}) | Previously Clicked: ${
+              card.clicked ? 'YES' : 'NO'
+            }`
+          )
+          return { ...card, clicked: updatedClickedState }
+        }
+        return card
+      })
+    )
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app-container">
+      <header className="app-header">
+        <h1>Pokémon Memory Cards</h1>
+        <p className="status-log">{lastClickedLog}</p>
+      </header>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {loading ? (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Fetching 16 random Pokémon from PokéAPI...</p>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      ) : (
+        <main>
+          <Board>
+            {cards.map((pokemon) => (
+              <Card
+                key={pokemon.id}
+                pokemon={pokemon}
+                onCardClick={handleCardClick}
+              />
+            ))}
+          </Board>
+        </main>
+      )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <GameModal
+        isOpen={gameStatus === 'won' || gameStatus === 'lost'}
+        status={gameStatus}
+        onRestart={() => setGameStatus('playing')}
+      />
+    </div>
   )
 }
 
