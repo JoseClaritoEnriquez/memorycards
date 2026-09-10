@@ -7,6 +7,7 @@ import './css/App.css'
 function App() {
   const [cards, setCards] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [cardOrder, setCardOrder] = useState([])
   const [highScore, setHighScore] = useState(0)
   const [gameStatus, setGameStatus] = useState('playing')
@@ -16,7 +17,7 @@ function App() {
     const shuffled = [...array]
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
-      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+        ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
     }
     return shuffled
   }
@@ -26,6 +27,7 @@ function App() {
 
     const fetchPokemonCards = async () => {
       setLoading(true)
+      setError(null)
       try {
         const uniqueIds = new Set()
         while (uniqueIds.size < 12) {
@@ -36,7 +38,10 @@ function App() {
         const idArray = Array.from(uniqueIds)
 
         const pokemonPromises = idArray.map(async (id) => {
-          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+          const response = await fetch(`https://pokeapi.co/api/v2/pokemson/${id}`)
+          if (!response.ok) {
+            throw new Error(`Failed to fetch Pokémon data (HTTP ${response.status})`)
+          }
           const data = await response.json()
           return {
             id: data.id,
@@ -53,11 +58,13 @@ function App() {
         if (isMounted) {
           setCards(fetchedCards)
           setCardOrder(shuffleArray(fetchedCards.map((c) => c.id)))
+          setError(null)
           setLoading(false)
         }
       } catch (error) {
         console.error('Error fetching Pokémon data:', error)
         if (isMounted) {
+          setError(error.message || 'Failed to fetch Pokémon data. Please check your connection or URL.')
           setLoading(false)
         }
       }
@@ -71,13 +78,13 @@ function App() {
   }, [])
 
   const handleCardClick = (clickedPokemon) => {
-    // 1. Loss condition check (clicked card already exists in clickedSet)
+
     if (clickedSet.has(clickedPokemon.id)) {
       setGameStatus('lost')
       return
     }
 
-    // 2. Add clicked card to new Set and check score / high score
+
     const newSet = new Set(clickedSet).add(clickedPokemon.id)
     console.log('clickedSet:', newSet)
 
@@ -86,13 +93,13 @@ function App() {
       setHighScore(newScore)
     }
 
-    // 3. Win condition check (all cards clicked once without repeats)
+
     const isWon = cards.length > 0 && newScore === cards.length
     if (isWon) {
       setGameStatus('won')
     }
 
-    // 4. Update states
+
     setClickedSet(newSet)
 
     setCards((prevCards) =>
@@ -104,7 +111,7 @@ function App() {
       })
     )
 
-    // 5. Shuffle card order only if game is still active
+
     if (!isWon) {
       setCardOrder((prevOrder) => shuffleArray(prevOrder))
     }
@@ -143,6 +150,11 @@ function App() {
           <div className="spinner"></div>
           <p>Fetching 12 random Pokémon from PokéAPI...</p>
         </div>
+      ) : error ? (
+        <main className="error-state">
+          <h2>⚠️ Failed to Load Pokémon</h2>
+          <p>{error}</p>
+        </main>
       ) : (
         <main>
           <Board
