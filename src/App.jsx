@@ -12,6 +12,15 @@ function App() {
   const [gameStatus, setGameStatus] = useState('playing')
   const [clickedSet, setClickedSet] = useState(new Set())
 
+  const shuffleArray = (array) => {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  }
+
   useEffect(() => {
     let isMounted = true
 
@@ -43,6 +52,7 @@ function App() {
 
         if (isMounted) {
           setCards(fetchedCards)
+          setCardOrder(shuffleArray(fetchedCards.map((c) => c.id)))
           setLoading(false)
         }
       } catch (error) {
@@ -61,35 +71,43 @@ function App() {
   }, [])
 
   const handleCardClick = (clickedPokemon) => {
+    // 1. Loss condition check (clicked card already exists in clickedSet)
     if (clickedSet.has(clickedPokemon.id)) {
       setGameStatus('lost')
       return
     }
 
-    setClickedSet((prevSet) => {
-      const nextSet = new Set(prevSet).add(clickedPokemon.id)
-      console.log('clickedSet:', nextSet)
+    // 2. Add clicked card to new Set and check score / high score
+    const newSet = new Set(clickedSet).add(clickedPokemon.id)
+    console.log('clickedSet:', newSet)
 
-      const newScore = nextSet.size
-      if (newScore > highScore) {
-        setHighScore(newScore)
-      }
+    const newScore = newSet.size
+    if (newScore > highScore) {
+      setHighScore(newScore)
+    }
 
-      if (cards.length > 0 && nextSet.size === cards.length) {
-        setGameStatus('won')
-      }
-      return nextSet
-    })
+    // 3. Win condition check (all cards clicked once without repeats)
+    const isWon = cards.length > 0 && newScore === cards.length
+    if (isWon) {
+      setGameStatus('won')
+    }
+
+    // 4. Update states
+    setClickedSet(newSet)
 
     setCards((prevCards) =>
       prevCards.map((card) => {
         if (card.id === clickedPokemon.id) {
-          const updatedClickedState = !card.clicked
-          return { ...card, clicked: updatedClickedState }
+          return { ...card, clicked: true }
         }
         return card
       })
     )
+
+    // 5. Shuffle card order only if game is still active
+    if (!isWon) {
+      setCardOrder((prevOrder) => shuffleArray(prevOrder))
+    }
   }
 
   const handleRestart = () => {
@@ -98,6 +116,7 @@ function App() {
     setCards((prevCards) =>
       prevCards.map((card) => ({ ...card, clicked: false }))
     )
+    setCardOrder((prevOrder) => shuffleArray(prevOrder))
   }
 
   return (
@@ -126,15 +145,11 @@ function App() {
         </div>
       ) : (
         <main>
-          <Board>
-            {cards.map((pokemon) => (
-              <Card
-                key={pokemon.id}
-                pokemon={pokemon}
-                onCardClick={handleCardClick}
-              />
-            ))}
-          </Board>
+          <Board
+            cards={cards}
+            cardOrder={cardOrder}
+            onCardClick={handleCardClick}
+          />
         </main>
       )}
 
