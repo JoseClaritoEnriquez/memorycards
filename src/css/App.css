@@ -8,28 +8,52 @@
 
 .app-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #f0f4f8;
 }
 
 .app-header h1 {
-  font-size: 2.5rem;
+  font-size: 2.75rem;
+  font-weight: 800;
   margin: 0 0 0.5rem 0;
-  color: #1a202c;
-  background: linear-gradient(135deg, #e53e3e, #9b2c2c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #e53e3e;
+  letter-spacing: -0.5px;
 }
 
-.status-log {
-  font-size: 1rem;
+.app-subtitle {
+  font-size: 1.1rem;
   font-weight: 500;
+  color: #4a5568;
+  margin: 0 0 1.25rem 0;
+}
+
+.score-board {
+  display: inline-flex;
+  gap: 2rem;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem 1.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.score-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #718096;
+}
+
+.score-value {
+  font-size: 1.35rem;
+  font-weight: 800;
   color: #e53e3e;
-  background: rgba(229, 62, 62, 0.08);
-  border: 1px solid rgba(229, 62, 62, 0.3);
-  display: inline-block;
-  padding: 0.5rem 1.25rem;
-  border-radius: 20px;
-  margin-top: 0.5rem;
 }
 
 .card-grid {
@@ -68,11 +92,24 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
   }
+
+  .app-header h1 {
+    font-size: 2.25rem;
+  }
 }
 
 @media (max-width: 600px) {
   .card-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
+  }
+
+  .app-header h1 {
+    font-size: 1.85rem;
+  }
+
+  .score-board {
+    gap: 1rem;
+    padding: 0.5rem 1rem;
   }
 }

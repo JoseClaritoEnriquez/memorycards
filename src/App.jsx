@@ -19,13 +19,12 @@ function App() {
       setLoading(true)
       try {
         const uniqueIds = new Set()
-        while (uniqueIds.size < 16) {
+        while (uniqueIds.size < 12) {
           const randomId = Math.floor(Math.random() * 151) + 1
           uniqueIds.add(randomId)
         }
 
         const idArray = Array.from(uniqueIds)
-
 
         const pokemonPromises = idArray.map(async (id) => {
           const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
@@ -70,6 +69,12 @@ function App() {
     setClickedSet((prevSet) => {
       const nextSet = new Set(prevSet).add(clickedPokemon.id)
       console.log('clickedSet:', nextSet)
+
+      const newScore = nextSet.size
+      if (newScore > highScore) {
+        setHighScore(newScore)
+      }
+
       if (cards.length > 0 && nextSet.size === cards.length) {
         setGameStatus('won')
       }
@@ -87,10 +92,31 @@ function App() {
     )
   }
 
+  const handleRestart = () => {
+    setClickedSet(new Set())
+    setGameStatus('playing')
+    setCards((prevCards) =>
+      prevCards.map((card) => ({ ...card, clicked: false }))
+    )
+  }
+
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>Pokémon Memory Cards</h1>
+        <h1>Pokémon Memory Card Game</h1>
+        <p className="app-subtitle">
+          Get points by clicking on a card, but don't click on any card more than once!
+        </p>
+        <div className="score-board">
+          <div className="score-item">
+            <span className="score-label">Score:</span>
+            <span className="score-value">{clickedSet.size}</span>
+          </div>
+          <div className="score-item">
+            <span className="score-label">High Score:</span>
+            <span className="score-value">{highScore}</span>
+          </div>
+        </div>
       </header>
 
       {loading ? (
@@ -115,7 +141,7 @@ function App() {
       <GameModal
         isOpen={gameStatus === 'won' || gameStatus === 'lost'}
         status={gameStatus}
-        onRestart={() => setGameStatus('playing')}
+        onRestart={handleRestart}
       />
     </div>
   )
